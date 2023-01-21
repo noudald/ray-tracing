@@ -6,22 +6,41 @@ use crate::vec3::{Color, Point, Vec3};
 use crate::color::write_color;
 use crate::ray::Ray;
 
+
+fn hit_sphere(center: &Point, radius: f32, ray: &Ray) -> bool {
+    let oc = ray.origin.clone() - center.clone();
+
+    let a = ray.direction.dot(&ray.direction);
+    let b = 2.0 * oc.dot(&ray.direction);
+    let c = oc.dot(&oc) - radius*radius;
+
+    let disc = b*b - 4.0*a*c;
+
+    disc > 0.0
+}
+
+
 fn ray_color(r: &Ray) -> Color {
+    if hit_sphere(&Vec3::new(0.0, 0.0, -1.0), 0.5, r) {
+        return Color::new(1.0, 0.0, 0.0);
+    }
+
     let unit_direction = r.direction.normalized();
     let t = 0.5 * (unit_direction.y + 1.0);
 
     (1.0 - t) * Color::new(1.0, 1.0, 1.0) + t * Color::new(0.5, 0.7, 1.0)
 }
 
+
 fn main() {
     // Image settings
     let aspect_ratio = 16.0 / 9.0;
     let image_width: u32 = 400;
-    let image_height: u32 = image_width / aspect_ratio as u32;
+    let image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
 
     // Camera settings
-    let viewport_height = 2.0;
-    let viewport_width = aspect_ratio * viewport_height;
+    let viewport_width = 2.0;
+    let viewport_height = viewport_width * aspect_ratio;
     let focal_length = 1.0;
 
     let origin = Point::zero();
