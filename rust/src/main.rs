@@ -7,7 +7,7 @@ use crate::color::write_color;
 use crate::ray::Ray;
 
 
-fn hit_sphere(center: &Point, radius: f32, ray: &Ray) -> bool {
+fn hit_sphere(center: &Point, radius: f32, ray: &Ray) -> f32 {
     let oc = ray.origin.clone() - center.clone();
 
     let a = ray.direction.dot(&ray.direction);
@@ -16,13 +16,20 @@ fn hit_sphere(center: &Point, radius: f32, ray: &Ray) -> bool {
 
     let disc = b*b - 4.0*a*c;
 
-    disc > 0.0
+    if (disc < 0.0) {
+        -1.0
+    } else {
+        (-b - disc.sqrt()) / (2.0 * a)
+    }
 }
 
 
 fn ray_color(r: &Ray) -> Color {
-    if hit_sphere(&Vec3::new(0.0, 0.0, -2.0), 0.5, r) {
-        return Color::new(1.0, 0.0, 0.0);
+    let t = hit_sphere(&Vec3::new(0.0, 0.0, -2.0), 0.5, r);
+
+    if t > 0.0 {
+        let N = (r.at(t) - Vec3::new(0.0, 0.0, -1.0)).normalized();
+        return 0.5 * Color::new(N.x + 1.0, N.y + 1.0, N.z + 1.0);
     }
 
     let unit_direction = r.direction.normalized();
@@ -34,13 +41,12 @@ fn ray_color(r: &Ray) -> Color {
 
 fn main() {
     // Image settings
-    let aspect_ratio = 1.0;
-    let image_width: u32 = 400;
-    let image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
+    let image_width = 400;
+    let image_height = 400;
 
     // Camera settings
     let viewport_width = 1.0;
-    let viewport_height = 1.0 / aspect_ratio * viewport_width;
+    let viewport_height = 1.0;
     let focal_length = 1.0;
 
     let origin = Point::zero();
