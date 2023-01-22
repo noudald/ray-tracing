@@ -21,7 +21,7 @@ fn hit_sphere(center: &Point, radius: f32, ray: &Ray) -> bool {
 
 
 fn ray_color(r: &Ray) -> Color {
-    if hit_sphere(&Vec3::new(0.0, 0.0, -1.0), 0.5, r) {
+    if hit_sphere(&Vec3::new(0.5, 0.0, -1.0), 0.5, r) {
         return Color::new(1.0, 0.0, 0.0);
     }
 
@@ -40,7 +40,7 @@ fn main() {
 
     // Camera settings
     let viewport_width = 2.0;
-    let viewport_height = viewport_width * aspect_ratio;
+    let viewport_height = 1.0 / aspect_ratio * viewport_width;
     let focal_length = 1.0;
 
     let origin = Point::zero();
@@ -58,8 +58,8 @@ fn main() {
     for i in 0..image_height {
         eprintln!("Processing line {}", i + 1);
         for j in 0..image_width {
-            let u = (i as f32) / ((image_height - 1) as f32);
-            let v = (j as f32) / ((image_width - 1) as f32);
+            let u = (i as f32) / ((image_width - 1) as f32);
+            let v = (j as f32) / ((image_height - 1) as f32);
 
             let direction = lower_left_corner.clone()
                 + u * horizontal.clone()
