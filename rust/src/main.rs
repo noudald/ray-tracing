@@ -21,7 +21,7 @@ fn hit_sphere(center: &Point, radius: f32, ray: &Ray) -> bool {
 
 
 fn ray_color(r: &Ray) -> Color {
-    if hit_sphere(&Vec3::new(0.5, 0.0, -1.0), 0.5, r) {
+    if hit_sphere(&Vec3::new(0.0, 0.0, -2.0), 0.5, r) {
         return Color::new(1.0, 0.0, 0.0);
     }
 
@@ -34,12 +34,12 @@ fn ray_color(r: &Ray) -> Color {
 
 fn main() {
     // Image settings
-    let aspect_ratio = 16.0 / 9.0;
+    let aspect_ratio = 1.0;
     let image_width: u32 = 400;
     let image_height: u32 = (image_width as f32 / aspect_ratio) as u32;
 
     // Camera settings
-    let viewport_width = 2.0;
+    let viewport_width = 1.0;
     let viewport_height = 1.0 / aspect_ratio * viewport_width;
     let focal_length = 1.0;
 
