@@ -74,3 +74,7 @@ inline std::ostream& operator<<(std::ostream &out, const Vec3 &vec) {
 }
 
 float dot(const Vec3 &u, const Vec3 &v);
+
+inline Vec3 operator+(const Vec3 &u, const Vec3 &v) {
+    return Vec3(u[0] + v[0], u[1] + v[1], u[2] + v[2]);
+}
