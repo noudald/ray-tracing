@@ -1,5 +1,6 @@
 #pragma once
 
+#include <ostream>
 #include <cmath>
 
 using std::sqrt;
@@ -38,12 +39,16 @@ class Vec3 {
             vec[0] += other[0];
             vec[1] += other[1];
             vec[2] += other[2];
+
+            return *this;
         }
 
         Vec3& operator*=(const float t) {
             vec[0] *= t;
             vec[1] *= t;
             vec[2] *= t;
+
+            return *this;
         }
 
         Vec3& operator/=(const float t) {
@@ -66,15 +71,47 @@ class Vec3 {
         float vec[3];
 };
 
+
 using Point3 = Vec3;
 using Color = Vec3;
+
 
 inline std::ostream& operator<<(std::ostream &out, const Vec3 &vec) {
     return out << "(" << vec.x() << ", " << vec.y() << ", " << vec.z() << ")";
 }
 
-float dot(const Vec3 &u, const Vec3 &v);
-
 inline Vec3 operator+(const Vec3 &u, const Vec3 &v) {
     return Vec3(u[0] + v[0], u[1] + v[1], u[2] + v[2]);
+}
+
+inline Vec3 operator-(const Vec3 &u, const Vec3 &v) {
+    return Vec3(u[0] - v[0], u[1] - v[1], u[2] - v[2]);
+}
+
+inline Vec3 operator*(const Vec3 &u, const Vec3 &v) {
+    return Vec3(u[0] * v[0], u[1] * v[1], u[2] * v[2]);
+}
+
+inline Vec3 operator*(float t, const Vec3 &u) {
+    return Vec3(t * u[0], t * u[1], t * u[2]);
+}
+
+inline Vec3 operator*(const Vec3 &u, float t) {
+    return t * u;
+}
+
+inline Vec3 operator/(const Vec3 &u, float t) {
+    return (1.0 / t) * u;
+}
+
+inline float dot(const Vec3 &u, const Vec3 &v) {
+    return u[0]*v[0] + u[1]*v[1] + u[2]*v[2];
+}
+
+inline Vec3 cross(const Vec3 &u, const Vec3 &v) {
+    return Vec3(u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]);
+}
+
+inline Vec3 unit_vector(Vec3 &u) {
+    return u / u.length();
 }
