@@ -1,32 +1,23 @@
 #include <iostream>
+#include <memory>
 
 #include <color.h>
 #include <ray.h>
 #include <vec3.h>
+#include <hittable.h>
+#include <hittable_list.h>
+#include <utils.h>
+#include <sphere.h>
 
 
-bool hit_sphere(const Point3 &center, float radius, const Ray &r) {
-    const Vec3 oc = r.origin() - center;
-
-    auto a = dot(r.direction(), r.direction());
-    auto b = 2.0 * dot(oc, r.direction());
-    auto c = dot(oc, oc) - radius*radius;
-
-    auto disc = b*b - 4*a*c;
-
-    return (disc > 0);
-}
-
-
-Color ray_color(const Ray &r) {
-    if (hit_sphere(Point3(0.0, 0.0, -1.0), 0.5, r)) {
-        return Color(1.0, 0.0, 0.0);
+Color ray_color(const Ray &r, const Hittable &world) {
+    hit_record rec;
+    if (world.hit(r, 0, infinity, rec)) {
+        return 0.5 * (rec.normal + Color(1.0, 1.0, 1.0));
     }
 
     Vec3 unit_direction = unit_vector(r.direction());
-
     auto t = 0.5 * (unit_direction[1] + 1.0);
-
     return (1.0 - t) * Color(1.0, 1.0, 1.0) + t * Color(0.5, 0.7, 1.0);
 }
 
@@ -50,6 +41,11 @@ int main() {
         - 0.5 * vertical
         - Vec3(0.0, 0.0, focal_length);
 
+    // World
+    HittableList world;
+    world.add(std::make_shared<Sphere>(Point3(0.0, 0.0, -1.0), 0.5));
+    world.add(std::make_shared<Sphere>(Point3(0.0, -100.5, -1.0), 100.0));
+
     // Render Image.
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
 
@@ -60,7 +56,7 @@ int main() {
             auto v = float(j) / (image_height - 1);
 
             Ray r(origin, lower_left_corner + u * horizontal + v * vertical - origin);
-            auto pixel_color = ray_color(r);
+            auto pixel_color = ray_color(r, world);
 
             write_color(std::cout, pixel_color);
         }
