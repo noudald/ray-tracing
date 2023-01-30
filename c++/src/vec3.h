@@ -3,6 +3,8 @@
 #include <ostream>
 #include <cmath>
 
+#include <utils.h>
+
 using std::sqrt;
 
 class Vec3 {
@@ -67,6 +69,14 @@ class Vec3 {
             return sqrt(length_squared());
         }
 
+        inline static Vec3 random() {
+            return Vec3(random_float(), random_float(), random_float());
+        }
+
+        inline static Vec3 random(float min, float max) {
+            return Vec3(random_float(min, max), random_float(min, max), random_float(min, max));
+        }
+
     private:
         float vec[3];
 };
@@ -114,4 +124,13 @@ inline Vec3 cross(const Vec3 &u, const Vec3 &v) {
 
 inline Vec3 unit_vector(Vec3 u) {
     return u / u.length();
+}
+
+
+inline Vec3 random_in_unit_sphere() {
+    while (true) {
+        auto p = Vec3::random(-1.0, 1.0);
+        if (p.length_squared() >= 1) continue;
+        return p;
+    }
 }

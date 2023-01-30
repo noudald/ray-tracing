@@ -11,10 +11,16 @@
 #include <camera.h>
 
 
-Color ray_color(const Ray &r, const Hittable &world) {
+Color ray_color(const Ray &r, const Hittable &world, int depth=50) {
     hit_record rec;
-    if (world.hit(r, 0, infinity, rec)) {
-        return 0.5 * (rec.normal + Color(1.0, 1.0, 1.0));
+
+    if (depth <= 0) {
+        return Color(0.0, 0.0, 0.0);
+    }
+
+    if (world.hit(r, 0.001, infinity, rec)) {
+        Point3 target = rec.p + rec.normal + random_in_unit_sphere();
+        return 0.5 * ray_color(Ray(rec.p, target - rec.p), world, depth-1);
     }
 
     Vec3 unit_direction = unit_vector(r.direction());
