@@ -1,11 +1,18 @@
 #pragma once
 
+#include <memory>
+
 #include <vec3.h>
 #include <ray.h>
+
+
+class Material;
+
 
 struct hit_record {
     Point3 p;
     Vec3 normal;
+    std::shared_ptr<Material> mat_ptr;
     float t;
     bool front_face;
 

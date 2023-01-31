@@ -77,6 +77,11 @@ class Vec3 {
             return Vec3(random_float(min, max), random_float(min, max), random_float(min, max));
         }
 
+        bool near_zero() const {
+            const auto s = 1e-6;
+            return (fabs(vec[0]) < s) && (fabs(vec[1]) < s) && (fabs(vec[2]) < s);
+        }
+
     private:
         float vec[3];
 };
@@ -133,4 +138,12 @@ inline Vec3 random_in_unit_sphere() {
         if (p.length_squared() >= 1) continue;
         return p;
     }
+}
+
+inline Vec3 random_unit_vector() {
+    return unit_vector(random_in_unit_sphere());
+}
+
+inline Vec3 reflect(const Vec3 &v, const Vec3 &n) {
+    return v - 2 * dot(v, n) * n;
 }

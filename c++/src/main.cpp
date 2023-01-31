@@ -1,14 +1,15 @@
 #include <iostream>
 #include <memory>
 
+#include <camera.h>
 #include <color.h>
-#include <ray.h>
-#include <vec3.h>
 #include <hittable.h>
 #include <hittable_list.h>
-#include <utils.h>
+#include <material.h>
+#include <ray.h>
 #include <sphere.h>
-#include <camera.h>
+#include <utils.h>
+#include <vec3.h>
 
 
 Color ray_color(const Ray &r, const Hittable &world, int depth=50) {
@@ -19,8 +20,12 @@ Color ray_color(const Ray &r, const Hittable &world, int depth=50) {
     }
 
     if (world.hit(r, 0.001, infinity, rec)) {
-        Point3 target = rec.p + rec.normal + random_in_unit_sphere();
-        return 0.5 * ray_color(Ray(rec.p, target - rec.p), world, depth-1);
+        Ray scattered;
+        Color attenuation;
+        if (rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
+            return attenuation * ray_color(scattered, world, depth - 1);
+        }
+        return Color(0.0, 0.0, 0.0);
     }
 
     Vec3 unit_direction = unit_vector(r.direction());
@@ -41,8 +46,16 @@ int main() {
 
     // World
     HittableList world;
-    world.add(std::make_shared<Sphere>(Point3(0.0, 0.0, -1.0), 0.5));
-    world.add(std::make_shared<Sphere>(Point3(0.0, -100.5, -1.0), 100.0));
+
+    auto material_center = std::make_shared<Lambertian>(Color(0.7, 0.3, 0.3));
+    auto material_ground = std::make_shared<Lambertian>(Color(0.8, 0.8, 0.0));
+    auto material_left = std::make_shared<Metal>(Color(0.8, 0.8, 0.8));
+    auto material_right = std::make_shared<FuzzyMetal>(Color(0.8, 0.6, 0.2), 0.8);
+
+    world.add(std::make_shared<Sphere>(Point3(0.0, -100.5, -1.0), 100.0, material_ground));
+    world.add(std::make_shared<Sphere>(Point3(0.0, 0.0, -1.0), 0.5, material_center));
+    world.add(std::make_shared<Sphere>(Point3(-1.0, 0.0, -1.0), 0.5, material_left));
+    world.add(std::make_shared<Sphere>(Point3(1.0, 0.0, -1.0), 0.5, material_right));
 
     // Render Image.
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
