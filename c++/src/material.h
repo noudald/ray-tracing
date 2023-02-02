@@ -90,3 +90,43 @@ class FuzzyMetal: public Material {
         Color albedo;
         float fuzz;
 };
+
+
+class Dielectric: public Material {
+    public:
+        Dielectric(float index_of_refraction): ir(index_of_refraction) {}
+
+        virtual bool scatter(
+            const Ray &r_in,
+            const hit_record &rec,
+            Color &attenuation,
+            Ray &scattered
+        ) const override {
+            attenuation = Color(1.0, 1.0, 1.0);
+            float refraction_ratio = rec.front_face ? (1.0 / ir) : ir;
+
+            Vec3 unit_direction = unit_vector(r_in.direction());
+            float cos_theta = fmin(dot(-unit_direction, rec.normal), 1.0);
+            float sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+
+            Vec3 direction;
+            if ((refraction_ratio * sin_theta > 1.0)
+                    || (reflectance(cos_theta, refraction_ratio) > random_float())) {
+                direction = reflect(unit_direction, rec.normal);
+            } else {
+                direction = refract(unit_direction, rec.normal, refraction_ratio);
+            }
+
+            scattered = Ray(rec.p, direction);
+
+            return true;
+        }
+
+    private:
+        float ir;  // Index of reflection.
+
+        static float reflectance(float cosine, float ref_idx) {
+            auto r0 = pow((1 - ref_idx) / (1 + ref_idx), 2);
+            return r0 + (1 - r0) * pow((1 - cosine), 5);
+        }
+};
