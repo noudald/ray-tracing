@@ -42,7 +42,13 @@ int main() {
     const int samples_per_pixel = 100;
 
     // Camera
-    Camera camera;
+    Camera camera(
+        Point3(-2.0, 2.0, 1.0),
+        Point3(0.0, 0.0, -1.0),
+        Vec3(0.0, 1.0, 0.0),
+        90.0,
+        aspect_ratio
+    );
 
     // World
     HittableList world;

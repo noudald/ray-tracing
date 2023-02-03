@@ -3,7 +3,9 @@
 #include <limits>
 #include <random>
 
+
 const float infinity = std::numeric_limits<float>::infinity();
+const float pi = 3.14159265;
 
 
 inline float random_float() {
@@ -26,4 +28,8 @@ inline float clamp(float x, float min, float max) {
         return max;
     }
     return x;
+}
+
+inline float degrees_to_radians(float deg) {
+    return deg * pi / 180.0;
 }
