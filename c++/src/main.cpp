@@ -42,12 +42,20 @@ int main() {
     const int samples_per_pixel = 100;
 
     // Camera
+    const Point3 look_from(3.0, 3.0, 2.0);
+    const Point3 look_at(0.0, 0.0, -1.0);
+    const Vec3 vup(0.0, 1.0, 0.0);
+    const auto dist_to_focus = (look_from - look_at).length();
+    const auto aperture = 2.0;
+
     Camera camera(
-        Point3(-2.0, 2.0, 1.0),
-        Point3(0.0, 0.0, -1.0),
-        Vec3(0.0, 1.0, 0.0),
-        90.0,
-        aspect_ratio
+        look_from,
+        look_at,
+        vup,
+        20,
+        aspect_ratio,
+        aperture,
+        dist_to_focus
     );
 
     // World

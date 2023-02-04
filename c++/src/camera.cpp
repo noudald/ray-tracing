@@ -8,7 +8,9 @@ Camera::Camera(
         const Point3 lookat,
         const Vec3 vup,
         const float vfov,
-        const float aspect_ratio
+        const float aspect_ratio,
+        const float aperture,
+        const float focus_dist
     ) {
     const auto theta = degrees_to_radians(vfov);
     const auto h = tan(theta / 2);
@@ -16,19 +18,27 @@ Camera::Camera(
     const auto viewport_height = 2.0 * h;
     const auto viewport_width = aspect_ratio * viewport_height;
 
-    const auto w = unit_vector(lookfrom - lookat);
-    const auto u = unit_vector(cross(vup, w));
-    const auto v = cross(w, u);
+    w = unit_vector(lookfrom - lookat);
+    u = unit_vector(cross(vup, w));
+    v = cross(w, u);
 
     origin = lookfrom;
-    horizontal = viewport_width * u;
-    vertical = viewport_height * v;
+    horizontal = focus_dist * viewport_width * u;
+    vertical = focus_dist * viewport_height * v;
     lower_left_corner = origin
         - 0.5 * horizontal
         - 0.5 * vertical
-        - w;
+        - focus_dist * w;
+
+    lens_radius = 0.5 * aperture;
 }
 
-Ray Camera::getRay(float u, float v) const {
-    return Ray(origin, lower_left_corner + u*horizontal + v*vertical - origin);
+Ray Camera::getRay(float s, float t) const {
+    const Vec3 rd = lens_radius * random_in_unit_sphere();
+    Vec3 offset = rd[0] * u + rd[1] * v;
+
+    return Ray(
+        origin + offset,
+        lower_left_corner + s*horizontal + t*vertical - origin - offset
+    );
 }
