@@ -1,3 +1,4 @@
+#include <execution>
 #include <iostream>
 #include <memory>
 
@@ -77,6 +78,40 @@ HittableList random_scene() {
 }
 
 
+struct compute_params {
+    std::shared_ptr<HittableList> world;
+    std::shared_ptr<Camera> camera;
+    int i;
+    int j;
+    int samples_per_pixel;
+    int image_width;
+    int image_height;
+    Color pixel_color;
+};
+
+
+Color render_point(compute_params &params) {
+    auto i = params.i;
+    auto j = params.j;
+    auto image_width = params.image_width;
+    auto image_height = params.image_height;
+    auto samples_per_pixel = params.samples_per_pixel;
+    auto camera = params.camera;
+    auto world = params.world;
+
+    Color pixel_color(0.0, 0.0, 0.0);
+    for (int s = 0; s < samples_per_pixel; s++) {
+        auto u = (float(i) + random_float()) / (image_width - 1);
+        auto v = (float(j) + random_float()) / (image_height - 1);
+
+        auto r = (*camera).getRay(u, v);
+        pixel_color += ray_color(r, *world);
+    }
+
+    return pixel_color;
+}
+
+
 int main() {
     // Image settings.
     const auto aspect_ratio = 3.0 / 2.0;
@@ -107,21 +142,43 @@ int main() {
     // Render Image.
     std::cout << "P3\n" << image_width << " " << image_height << "\n255\n";
 
-    for (int j = image_height - 1; j >= 0; j--) {
-        if (j % (image_height / 10) == 0) {
-            std::cerr << ".";
-        }
-        for (int i = 0; i < image_width; i++) {
-            Color pixel_color(0.0, 0.0, 0.0);
-            for (int s = 0; s < samples_per_pixel; s++) {
-                auto u = (float(i) + random_float()) / (image_width - 1);
-                auto v = (float(j) + random_float()) / (image_height - 1);
+    compute_params params = {
+        .world = std::make_shared<HittableList>(world),
+        .camera = std::make_shared<Camera>(camera),
+        .i = 0,
+        .j = 0,
+        .samples_per_pixel = samples_per_pixel,
+        .image_width = image_width,
+        .image_height = image_height,
+        .pixel_color = Color(0.0, 0.0, 0.0)
+    };
 
-                auto r = camera.getRay(u, v);
-                pixel_color += ray_color(r, world);
-            }
-            write_color(std::cout, pixel_color, samples_per_pixel);
+    std::vector<compute_params> vparams;
+    for (int j = image_height - 1; j >= 0; j--) {
+        for (int i = 0; i < image_width; i++) {
+            compute_params params = {
+                .world = std::make_shared<HittableList>(world),
+                .camera = std::make_shared<Camera>(camera),
+                .i = i,
+                .j = j,
+                .samples_per_pixel = samples_per_pixel,
+                .image_width = image_width,
+                .image_height = image_height,
+            };
+            vparams.push_back(params);
         }
     }
-    std::cerr << std::endl;
+
+    std::for_each(
+        std::execution::par,
+        vparams.begin(),
+        vparams.end(),
+        [](compute_params &params) {
+            params.pixel_color = render_point(params);
+        }
+    );
+
+    for (auto &params: vparams) {
+            write_color(std::cout, params.pixel_color, samples_per_pixel);
+    }
 }
